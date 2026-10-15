@@ -17,6 +17,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 8.3.2
+    
     - name: Install Android SDK
       run: |
         mkdir -p $ANDROID_HOME/cmdline-tools/latest
@@ -43,11 +48,6 @@ jobs:
         echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.2.11394342" >> $GITHUB_ENV
         echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
-    
-    - name: Generate Gradle Wrapper
-      run: |
-        cd LiveMicBT
-        gradle wrapper --gradle-version 8.3.2 --gradle-distribution-url=https://services.gradle.org/distributions/gradle-8.3.2-bin.zip
     
     - name: Build Release APK
       run: |
