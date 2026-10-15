@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LiveMic BT Studio</string>
+    <string name="accessibility_service_label">LiveMic Call-Mode Mic Keep-Alive</string>
+    <string name="accessibility_service_description">Allows LiveMic BT to continue capturing microphone audio when a cellular or WhatsApp/VoIP call is active on Android 13+.</string>
+</resources>
