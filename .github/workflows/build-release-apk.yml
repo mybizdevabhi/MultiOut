@@ -54,15 +54,39 @@ jobs:
         cd LiveMicBT
         gradle wrapper --gradle-version 8.4
     
-    - name: Build Release APK
+    - name: Create debug keystore
+      run: |
+        cd LiveMicBT
+        mkdir -p app
+        keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+    
+    - name: Build Signed Release APK
       run: |
         cd LiveMicBT
         chmod +x gradlew
         ./gradlew assembleRelease
     
+    - name: Sign APK
+      run: |
+        cd LiveMicBT
+        # Find the unsigned APK
+        UNSIGNED_APK=$(find app/build/outputs/apk/release -name "app-release-unsigned.apk" | head -1)
+        if [ -n "$UNSIGNED_APK" ]; then
+          # Sign with debug keystore
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore app/debug.keystore -storepass android -keypass android "$UNSIGNED_APK" androiddebugkey
+          
+          # Rename to signed
+          SIGNED_APK="${UNSIGNED_APK/-unsigned/}"
+          mv "$UNSIGNED_APK" "$SIGNED_APK"
+          
+          # Verify
+          echo "Signed APK: $SIGNED_APK"
+          ls -la "$SIGNED_APK"
+        fi
+    
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: LiveMicBT-Release-APK
-        path: LiveMicBT/app/build/outputs/apk/release/*.apk
+        path: LiveMicBT/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
