@@ -28,7 +28,6 @@ jobs:
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
         unzip -q /tmp/cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools/latest
         export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-        
         echo "y" | sdkmanager --sdk_root=$ANDROID_HOME --licenses > /dev/null 2>&1 || true
         sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1
     
@@ -54,34 +53,17 @@ jobs:
         cd LiveMicBT
         gradle wrapper --gradle-version 8.4
     
-    - name: Create debug keystore
-      run: |
-        cd LiveMicBT
-        mkdir -p app
-        keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-    
-    - name: Build and Sign Debug APK
+    - name: Build Debug APK
       run: |
         cd LiveMicBT
         chmod +x gradlew
-        # Create signing config
-        mkdir -p app
-        cat > app/signing.properties << 'EOF'
-storeFile=debug.keystore
-storePassword=android
-keyAlias=androiddebugkey
-keyPassword=android
-EOF
-        # Update build.gradle.kts to use signing
         ./gradlew assembleDebug
     
-    - name: Rename to installable APK
+    - name: Copy APK to output
       run: |
         cd LiveMicBT
-        DEBUG_APK=$(find app/build/outputs/apk/debug -name "app-debug.apk" | head -1)
-        if [ -n "$DEBUG_APK" ]; then
-          cp "$DEBUG_APK" app/build/outputs/apk/release/app-release.apk
-        fi
+        mkdir -p app/build/outputs/apk/release
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
