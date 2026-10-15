@@ -20,10 +20,11 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        sdk-platforms: 34
+        sdk-platforms: android-34
         ndk-version: 26.2.11394342
         cmake-version: 3.22.1
         build-tools: 34.0.0
+        accept-license: yes
     
     - name: Build Release APK
       run: |
