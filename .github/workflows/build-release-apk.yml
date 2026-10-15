@@ -17,23 +17,32 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        android-accept-license: yes
-        ndk-accept-license: yes
-        cmake-accept-license: yes
-        sdk-platforms: android-34
-        ndk-version: 26.2.11394342
-        cmake-version: 3.22.1
-        build-tools: 34.0.0
-    
-    - name: Accept all SDK licenses
-      run: yes | sdkmanager --licenses > /dev/null 2>&1 || true
-    
-    - name: Install required packages
+    - name: Install Android SDK
       run: |
-        sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.2.11394342" "cmake;3.22.1" > /dev/null 2>&1 || true
+        mkdir -p $ANDROID_HOME/cmdline-tools/latest
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+        unzip -q /tmp/cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools/latest
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+        
+        echo "y" | sdkmanager --sdk_root=$ANDROID_HOME --licenses > /dev/null 2>&1 || true
+        sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1
+    
+    - name: Install NDK
+      run: |
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+        sdkmanager --sdk_root=$ANDROID_HOME "ndk;26.2.11394342" > /dev/null 2>&1
+    
+    - name: Install CMake
+      run: |
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+        sdkmanager --sdk_root=$ANDROID_HOME "cmake;3.22.1" > /dev/null 2>&1
+    
+    - name: Set environment variables
+      run: |
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.2.11394342" >> $GITHUB_ENV
+        echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
     
     - name: Build Release APK
       run: |
