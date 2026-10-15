@@ -17,14 +17,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    - name: Setup Android SDK
+    - name: Install Android SDK
       uses: android-actions/setup-android@v3
       with:
+        android-accept-license: yes
+        ndk-accept-license: yes
+        cmake-accept-license: yes
         sdk-platforms: android-34
         ndk-version: 26.2.11394342
         cmake-version: 3.22.1
         build-tools: 34.0.0
-        accept-license: yes
+    
+    - name: Accept licenses
+      run: yes | sdkmanager --licenses > /dev/null 2>&1 || true
     
     - name: Build Release APK
       run: |
