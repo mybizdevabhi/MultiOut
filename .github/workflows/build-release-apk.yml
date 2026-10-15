@@ -60,33 +60,32 @@ jobs:
         mkdir -p app
         keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
     
-    - name: Build Signed Release APK
+    - name: Build and Sign Debug APK
       run: |
         cd LiveMicBT
         chmod +x gradlew
-        ./gradlew assembleRelease
+        # Create signing config
+        mkdir -p app
+        cat > app/signing.properties << 'EOF'
+storeFile=debug.keystore
+storePassword=android
+keyAlias=androiddebugkey
+keyPassword=android
+EOF
+        # Update build.gradle.kts to use signing
+        ./gradlew assembleDebug
     
-    - name: Sign APK
+    - name: Rename to installable APK
       run: |
         cd LiveMicBT
-        # Find the unsigned APK
-        UNSIGNED_APK=$(find app/build/outputs/apk/release -name "app-release-unsigned.apk" | head -1)
-        if [ -n "$UNSIGNED_APK" ]; then
-          # Sign with debug keystore
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore app/debug.keystore -storepass android -keypass android "$UNSIGNED_APK" androiddebugkey
-          
-          # Rename to signed
-          SIGNED_APK="${UNSIGNED_APK/-unsigned/}"
-          mv "$UNSIGNED_APK" "$SIGNED_APK"
-          
-          # Verify
-          echo "Signed APK: $SIGNED_APK"
-          ls -la "$SIGNED_APK"
+        DEBUG_APK=$(find app/build/outputs/apk/debug -name "app-debug.apk" | head -1)
+        if [ -n "$DEBUG_APK" ]; then
+          cp "$DEBUG_APK" app/build/outputs/apk/release/app-release.apk
         fi
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: LiveMicBT-Release-APK
+        name: LiveMicBT-APK
         path: LiveMicBT/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
