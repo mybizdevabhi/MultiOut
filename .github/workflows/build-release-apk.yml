@@ -49,6 +49,11 @@ jobs:
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.2.11394342" >> $GITHUB_ENV
         echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
     
+    - name: Generate Gradle Wrapper
+      run: |
+        cd LiveMicBT
+        gradle wrapper --gradle-version 8.3
+    
     - name: Build Release APK
       run: |
         cd LiveMicBT
