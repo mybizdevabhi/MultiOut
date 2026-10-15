@@ -47,7 +47,7 @@ jobs:
     - name: Generate Gradle Wrapper
       run: |
         cd LiveMicBT
-        gradle wrapper --gradle-version 8.3.2
+        gradle wrapper --gradle-version 8.3.2 --gradle-distribution-url=https://services.gradle.org/distributions/gradle-8.3.2-bin.zip
     
     - name: Build Release APK
       run: |
